@@ -22,6 +22,7 @@ public class MainClass {
             addNewOrder(factory, client, product1, 2);
             addNewOrder(factory, client, product2, 4);
             getClientProductsInfo(factory,client).forEach(System.out::println);
+            getProductClientsInfo(factory,product1).forEach(System.out::println);
         } finally {
             factory.close();
         }
@@ -74,8 +75,7 @@ public class MainClass {
     private static List<Product> getClientProductsInfo(SessionFactory factory, Client client) {
         Session session = factory.getCurrentSession();
         session.beginTransaction();
-        Client clientFromDb = session.createQuery("SELECT c FROM Client c WHERE c.id=:id",Client.class).setParameter("id", client.getId()).getSingleResult();
-        List<Product> products = new ArrayList<>(clientFromDb.getProductList());
+        List<Product> products = session.createQuery("SELECT c.productList FROM Client c WHERE c.id=:id").setParameter("id", client.getId()).getResultList();
         session.getTransaction().commit();
         session.close();
         return products;
@@ -84,8 +84,7 @@ public class MainClass {
     private static List<Client> getProductClientsInfo(SessionFactory factory, Product product) {
         Session session = factory.getCurrentSession();
         session.beginTransaction();
-        Product productFromDb = session.createQuery("SELECT p FROM Product p WHERE p.id=:id", Product.class).setParameter("id", product.getId()).getSingleResult();
-        List<Client> clients = new ArrayList<>(productFromDb.getClientList());
+        List<Client> clients = session.createQuery("SELECT p.clientList FROM Product p WHERE p.id=:id").setParameter("id", product.getId()).getResultList();
         session.getTransaction().commit();
         session.close();
         return clients;
