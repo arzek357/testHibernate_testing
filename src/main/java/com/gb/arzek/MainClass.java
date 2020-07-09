@@ -9,7 +9,6 @@ import org.hibernate.cfg.Configuration;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class MainClass {
     public static void main(String[] args) {
@@ -17,12 +16,12 @@ public class MainClass {
                 .configure("config/hibernate.cfg.xml")
                 .buildSessionFactory();
         try {
-            Client client = addNewClient(factory, new Client("Petya"));
-            Product product1 = addNewProduct(factory, new Product("Bulka", 19l));
-            Product product2 = addNewProduct(factory, new Product("Kex", 92l));
-            addNewOrder(factory, client, product1, 1);
-            addNewOrder(factory, client, product2, 1);
-            getClientProductsInfo(factory, client).forEach(System.out::println);
+            Client client = addNewClient(factory, new Client("Manya"));
+            Product product1 = addNewProduct(factory, new Product("Apple", 5l));
+            Product product2 = addNewProduct(factory, new Product("Water", 4l));
+            addNewOrder(factory, client, product1, 2);
+            addNewOrder(factory, client, product2, 4);
+            getClientProductsInfo(factory,client).forEach(System.out::println);
         } finally {
             factory.close();
         }
@@ -73,22 +72,20 @@ public class MainClass {
     }
 
     private static List<Product> getClientProductsInfo(SessionFactory factory, Client client) {
-        List<Product> products = new ArrayList<>();
         Session session = factory.getCurrentSession();
         session.beginTransaction();
-        List<Order> orders = session.createQuery("SELECT o FROM Order o WHERE o.client_id=:id", Order.class).setParameter("id", client.getId()).getResultList();
-        orders.forEach(order -> products.add(order.getProduct()));
+        Client clientFromDb = session.createQuery("SELECT c FROM Client c WHERE c.id=:id",Client.class).setParameter("id", client.getId()).getSingleResult();
+        List<Product> products = new ArrayList<>(clientFromDb.getProductList());
         session.getTransaction().commit();
         session.close();
         return products;
     }
 
     private static List<Client> getProductClientsInfo(SessionFactory factory, Product product) {
-        List<Client> clients = new ArrayList<>();
         Session session = factory.getCurrentSession();
         session.beginTransaction();
-        List<Order> orders = session.createQuery("SELECT o FROM Order o WHERE o.client_id=:id", Order.class).setParameter("id", product.getId()).getResultList();
-        orders.forEach(order -> clients.add(order.getClient()));
+        Product productFromDb = session.createQuery("SELECT p FROM Product p WHERE p.id=:id", Product.class).setParameter("id", product.getId()).getSingleResult();
+        List<Client> clients = new ArrayList<>(productFromDb.getClientList());
         session.getTransaction().commit();
         session.close();
         return clients;

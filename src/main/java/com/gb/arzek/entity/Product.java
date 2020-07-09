@@ -1,6 +1,7 @@
 package com.gb.arzek.entity;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "products")
@@ -15,6 +16,14 @@ public class Product {
 
     @Column(name = "price")
     private Long price;
+
+    @ManyToMany
+    @JoinTable(
+            name = "orders",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "client_id")
+    )
+    private List<Client> clientList;
 
     public Long getId() {
         return id;
@@ -51,5 +60,9 @@ public class Product {
     @Override
     public String toString() {
         return String.format("Product [id = %d, name = %s, price=%d]", id, name, price);
+    }
+
+    public List<Client> getClientList() {
+        return clientList;
     }
 }
